@@ -1,0 +1,58 @@
+[Unit]
+Description=Jawn Vault - Secure credential proxy
+Documentation=https://github.com/jamditis/jawn-vault
+After=network.target
+Wants=gpg-agent.socket
+
+[Service]
+Type=simple
+User=jamditis
+Group=jamditis
+
+# Main process
+ExecStart=/home/jamditis/projects/jawn-vault/target/release/jawn-vault --foreground
+ExecReload=/bin/kill -HUP $MAINPID
+
+# Environment
+Environment=RUST_LOG=jawn_vault=info
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+
+# Working directory
+WorkingDirectory=/home/jamditis
+
+# Restart policy
+Restart=on-failure
+RestartSec=5
+StartLimitBurst=3
+StartLimitIntervalSec=60
+
+# Security hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+MemoryDenyWriteExecute=yes
+LockPersonality=yes
+
+# Allow access to required paths
+ReadWritePaths=/home/jamditis/.local/share/jawn-vault
+ReadWritePaths=/run/user/1000
+ReadOnlyPaths=/home/jamditis/.password-store
+ReadOnlyPaths=/home/jamditis/.gnupg
+
+# Socket permissions
+RuntimeDirectory=jawn-vault
+RuntimeDirectoryMode=0700
+
+# Resource limits
+LimitNOFILE=1024
+MemoryMax=256M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,68 @@
+# Jawn Vault configuration
+# Copy to ~/.config/jawn-vault/config.toml and customize
+
+[server]
+# Unix socket path (defaults to $XDG_RUNTIME_DIR/jawn-vault.sock)
+socket_path = "/run/user/1000/jawn-vault.sock"
+
+# Socket file permissions (octal, use decimal in TOML: 0o600 = 384)
+socket_mode = 384
+
+# Maximum concurrent client connections
+max_connections = 100
+
+# Request timeout in seconds
+request_timeout_secs = 30
+
+[cache]
+# Enable in-memory credential caching
+enabled = true
+
+# Default TTL for cache entries (seconds)
+default_ttl_secs = 300  # 5 minutes
+
+# Maximum TTL allowed (caps custom TTLs)
+max_ttl_secs = 3600  # 1 hour
+
+# Maximum number of cached entries
+max_entries = 1000
+
+[pass]
+# Path to pass binary
+binary = "pass"
+
+# Path to password store directory
+store_path = "/home/jamditis/.password-store"
+
+# Timeout for pass commands (seconds)
+timeout_secs = 10
+
+[audit]
+# Enable audit logging
+enabled = true
+
+# Path to SQLite audit database
+db_path = "/home/jamditis/.local/share/jawn-vault/audit.db"
+
+# Log retention in days (0 = keep forever)
+retention_days = 90
+
+# Future: Token rotation configuration
+# [rotation]
+# enabled = false
+#
+# [[rotation.providers]]
+# name = "slack"
+# provider_type = "slack_oauth"
+# paths = ["claude/services/slack-ccm-auditor-bot-token"]
+# schedule = "0 */10 * * * *"  # Every 10 hours
+# [rotation.providers.config]
+# client_id_path = "claude/services/slack-ccm-auditor-client-id"
+# client_secret_path = "claude/services/slack-ccm-auditor-client-secret"
+# refresh_token_path = "claude/services/slack-ccm-auditor-bot-refresh"
+
+# Future: Alerting configuration
+# [alerting]
+# enabled = false
+# telegram_token_path = "claude/tokens/telegram-bot"
+# telegram_chat_id = 123456789

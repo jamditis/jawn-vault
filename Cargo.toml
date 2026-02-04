@@ -1,0 +1,78 @@
+[package]
+name = "jawn-vault"
+version = "0.1.0"
+edition = "2021"
+authors = ["Joe Amditis <jamditis@gmail.com>"]
+description = "Secure credential proxy with caching, audit logging, and automatic token rotation"
+repository = "https://github.com/jamditis/jawn-vault"
+license = "MIT"
+readme = "README.md"
+keywords = ["credentials", "secrets", "password-manager", "cache", "security"]
+categories = ["authentication", "caching", "command-line-utilities"]
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full", "signal"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+# Security - memory safety for secrets
+zeroize = { version = "1", features = ["derive"] }
+secrecy = "0.10"
+
+# Database for audit logging
+rusqlite = { version = "0.31", features = ["bundled"] }
+
+# Logging and tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# HTTP client for token rotation
+reqwest = { version = "0.12", features = ["rustls-tls", "json"] }
+
+# CLI parsing
+clap = { version = "4", features = ["derive", "env"] }
+
+# Scheduled tasks for token rotation
+tokio-cron-scheduler = "0.13"
+
+# Date/time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Error handling
+thiserror = "2"
+anyhow = "1"
+
+# Cryptography for token signing
+ring = "0.17"
+base64 = "0.22"
+
+# Unix socket peer credentials
+libc = "0.2"
+
+# Async traits
+async-trait = "0.1"
+
+# XDG directory handling
+dirs = "5"
+
+[dev-dependencies]
+tempfile = "3"
+tokio-test = "0.4"
+
+[[bin]]
+name = "jawn-vault"
+path = "src/main.rs"
+
+[[bin]]
+name = "vault-cli"
+path = "src/cli.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
