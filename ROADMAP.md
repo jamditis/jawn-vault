@@ -1,6 +1,6 @@
 # Jawn Vault roadmap
 
-## Current status: Phase 1 complete
+## Current status: Phase 3 complete
 
 The core infrastructure is implemented:
 - Unix socket server with tokio
@@ -10,7 +10,7 @@ The core infrastructure is implemented:
 - Audit logging with SQLite
 - CLI tool for basic operations
 
-## Phase 2: Security hardening (next)
+## Phase 2: Security hardening
 
 | Task | Status | Notes |
 |------|--------|-------|
@@ -24,8 +24,8 @@ The core infrastructure is implemented:
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Python SDK | Pending | Unix socket, error handling |
-| Node.js SDK | Pending | TypeScript, same pattern |
+| Python SDK | ✓ Done | Unix socket, context manager, error handling, tests |
+| Node.js SDK | ✓ Done | TypeScript, async/await, error handling, tests |
 | CLI tool | ✓ Done | get/set/list/health/token |
 | Documentation | ✓ Done | README, example config |
 
@@ -97,7 +97,7 @@ class VaultError(Exception):
     pass
 ```
 
-## Phase 4: Token rotation (future)
+## Phase 4: Token rotation (next)
 
 | Task | Status | Notes |
 |------|--------|-------|

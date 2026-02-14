@@ -1,0 +1,27 @@
+{
+  "name": "jawn-vault",
+  "version": "0.1.0",
+  "description": "Node.js/TypeScript client for the jawn-vault credential daemon",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/test/*.js",
+    "pretest": "tsc"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jamditis/jawn-vault"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jawn-vault"
+version = "0.1.0"
+description = "Python client for the jawn-vault credential daemon"
+requires-python = ">=3.10"
+license = "MIT"
+
+[project.urls]
+Repository = "https://github.com/jamditis/jawn-vault"
+
+[tool.setuptools.packages.find]
+include = ["jawn_vault*"]
