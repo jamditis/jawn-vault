@@ -16,11 +16,13 @@ use clap::Parser;
 use tokio::signal;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
+use jawn_vault::alerting::{Alerter, TelegramAlerter};
 use jawn_vault::audit::AuditLog;
 use jawn_vault::auth::Authenticator;
 use jawn_vault::backend::PassBackend;
 use jawn_vault::cache::Cache;
 use jawn_vault::config::Config;
+use jawn_vault::rotation::scheduler::RotationScheduler;
 use jawn_vault::server::VaultServer;
 
 #[derive(Parser, Debug)]
@@ -81,7 +83,8 @@ async fn main() -> anyhow::Result<()> {
     tracing::debug!(config = ?config, "loaded configuration");
 
     // Initialize components
-    let backend = Arc::new(PassBackend::new(&config.pass));
+    let backend: Arc<dyn jawn_vault::backend::Backend> =
+        Arc::new(PassBackend::new(&config.pass));
 
     let cache = Arc::new(Cache::new(
         Duration::from_secs(config.cache.default_ttl_secs),
@@ -96,6 +99,49 @@ async fn main() -> anyhow::Result<()> {
     let auth = Arc::new(Authenticator::new(&auth_db_path)?);
 
     let audit = Arc::new(AuditLog::new(&config.audit.db_path, config.audit.retention_days)?);
+
+    // Initialize alerter
+    let alerter: Option<Arc<dyn Alerter>> =
+        TelegramAlerter::from_config(&config.alerting, backend.as_ref())
+            .await
+            .map(|a| Arc::new(a) as Arc<dyn Alerter>);
+
+    if alerter.is_some() {
+        tracing::info!("telegram alerting enabled");
+    }
+
+    // Start rotation scheduler
+    let rotation_scheduler = if config.rotation.enabled && !config.rotation.providers.is_empty() {
+        match RotationScheduler::start(
+            &config.rotation,
+            Arc::clone(&backend),
+            Arc::clone(&cache),
+            alerter.clone(),
+        )
+        .await
+        {
+            Ok(s) => {
+                tracing::info!(
+                    providers = config.rotation.providers.len(),
+                    "rotation scheduler started"
+                );
+                Some(s)
+            }
+            Err(e) => {
+                tracing::error!(error = %e, "failed to start rotation scheduler");
+                if let Some(ref a) = alerter {
+                    a.alert(
+                        &format!("rotation scheduler failed to start: {e}"),
+                        jawn_vault::alerting::AlertSeverity::Critical,
+                    );
+                }
+                None
+            }
+        }
+    } else {
+        tracing::info!("rotation scheduler disabled");
+        None
+    };
 
     // Create server
     let server = Arc::new(VaultServer::new(
@@ -130,6 +176,13 @@ async fn main() -> anyhow::Result<()> {
     shutdown_signal().await;
 
     tracing::info!("shutting down");
+
+    // Shut down rotation scheduler
+    if let Some(scheduler) = rotation_scheduler {
+        if let Err(e) = scheduler.shutdown().await {
+            tracing::error!(error = %e, "rotation scheduler shutdown error");
+        }
+    }
 
     // Abort the server task
     server_handle.abort();

@@ -1,6 +1,6 @@
 # Jawn Vault roadmap
 
-## Current status: Phase 3 complete
+## Current status: Phase 4 complete
 
 The core infrastructure is implemented:
 - Unix socket server with tokio
@@ -97,15 +97,16 @@ class VaultError(Exception):
     pass
 ```
 
-## Phase 4: Token rotation (next)
+## Phase 4: Token rotation
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Rotation scheduler | Pending | tokio-cron-scheduler |
-| Provider trait | ✓ Stub | In rotation/mod.rs |
-| Slack OAuth | Pending | 12h tokens |
-| Google OAuth | Pending | 1h tokens |
-| Telegram alerts | Pending | On rotation failure |
+| Rotation scheduler | ✓ Done | tokio-cron-scheduler, cron expressions |
+| Provider trait | ✓ Done | In rotation/mod.rs, backend-aware |
+| Slack OAuth | ✓ Done | rotation/slack.rs, refresh token cycling |
+| Google OAuth | ✓ Done | rotation/google.rs, 1h token refresh |
+| HTTP generic | ✓ Done | rotation/http.rs, configurable endpoint |
+| Telegram alerts | ✓ Done | Rate-limited, fire-and-forget |
 
 ### Slack rotation implementation
 
@@ -145,7 +146,7 @@ impl RotationProvider for SlackOAuthProvider {
 }
 ```
 
-## Phase 5: Service migration
+## Phase 5: Service migration (next)
 
 | Service | Status | Notes |
 |---------|--------|-------|
