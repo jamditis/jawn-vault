@@ -15,5 +15,15 @@ Thumbs.db
 # Local config (don't commit real configs)
 *.local.toml
 
+# Node.js
+node_modules/
+dist/
+package-lock.json
+
+# Python
+__pycache__/
+*.egg-info/
+*.pyc
+
 # Test artifacts
 *.db

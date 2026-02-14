@@ -1,6 +1,6 @@
 # Jawn Vault roadmap
 
-## Current status: Phase 1 complete
+## Current status: Phase 4 complete
 
 The core infrastructure is implemented:
 - Unix socket server with tokio
@@ -10,7 +10,7 @@ The core infrastructure is implemented:
 - Audit logging with SQLite
 - CLI tool for basic operations
 
-## Phase 2: Security hardening (next)
+## Phase 2: Security hardening
 
 | Task | Status | Notes |
 |------|--------|-------|
@@ -24,8 +24,8 @@ The core infrastructure is implemented:
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Python SDK | Pending | Unix socket, error handling |
-| Node.js SDK | Pending | TypeScript, same pattern |
+| Python SDK | ✓ Done | Unix socket, context manager, error handling, tests |
+| Node.js SDK | ✓ Done | TypeScript, async/await, error handling, tests |
 | CLI tool | ✓ Done | get/set/list/health/token |
 | Documentation | ✓ Done | README, example config |
 
@@ -97,15 +97,16 @@ class VaultError(Exception):
     pass
 ```
 
-## Phase 4: Token rotation (future)
+## Phase 4: Token rotation
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Rotation scheduler | Pending | tokio-cron-scheduler |
-| Provider trait | ✓ Stub | In rotation/mod.rs |
-| Slack OAuth | Pending | 12h tokens |
-| Google OAuth | Pending | 1h tokens |
-| Telegram alerts | Pending | On rotation failure |
+| Rotation scheduler | ✓ Done | tokio-cron-scheduler, cron expressions |
+| Provider trait | ✓ Done | In rotation/mod.rs, backend-aware |
+| Slack OAuth | ✓ Done | rotation/slack.rs, refresh token cycling |
+| Google OAuth | ✓ Done | rotation/google.rs, 1h token refresh |
+| HTTP generic | ✓ Done | rotation/http.rs, configurable endpoint |
+| Telegram alerts | ✓ Done | Rate-limited, fire-and-forget |
 
 ### Slack rotation implementation
 
@@ -145,7 +146,7 @@ impl RotationProvider for SlackOAuthProvider {
 }
 ```
 
-## Phase 5: Service migration
+## Phase 5: Service migration (next)
 
 | Service | Status | Notes |
 |---------|--------|-------|

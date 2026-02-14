@@ -3,12 +3,14 @@
 //! This library provides the core functionality for the Jawn Vault daemon,
 //! including credential caching, pass backend integration, and audit logging.
 
+pub mod alerting;
 pub mod audit;
 pub mod auth;
 pub mod backend;
 pub mod cache;
 pub mod config;
 pub mod protocol;
+pub mod rotation;
 pub mod server;
 
 use thiserror::Error;
