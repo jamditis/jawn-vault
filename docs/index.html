@@ -1,0 +1,362 @@
+<!--
+  jawn vault — https://jamditis.github.io/jawn-vault/
+  Rust-powered credential proxy for the houseofjawn network.
+  Wraps pass (GPG) with in-memory caching, audit logging, and path-based token permissions.
+  "jawn" is Philly slang for "thing" — as in, the thing that holds all your other things.
+
+  stack: Rust, Tokio, SQLite, ring (crypto), clap, secrecy, zeroize
+  built by: joe amditis  —  jamditis@gmail.com
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>jawn vault</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <meta name="description" content="Rust-powered credential proxy with in-memory caching, audit logging, and path-based token permissions. Built for the houseofjawn network.">
+
+  <meta property="og:title" content="jawn vault">
+  <meta property="og:description" content="Rust-powered credential proxy with in-memory caching, audit logging, and path-based token permissions.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jamditis.github.io/jawn-vault/">
+  <meta property="og:image" content="https://jamditis.github.io/jawn-vault/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="jawn vault">
+  <meta name="twitter:description" content="Rust-powered credential proxy with in-memory caching, audit logging, and path-based token permissions.">
+  <meta name="twitter:image" content="https://jamditis.github.io/jawn-vault/og-image.png">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d1117;
+      --bg2:       #161b22;
+      --bg3:       #1c2128;
+      --border:    #30363d;
+      --text:      #e6edf3;
+      --muted:     #8b949e;
+      --green:     #3fb950;
+      --green-dim: #1a4423;
+      --amber:     #d29922;
+      --amber-dim: #3d2f00;
+      --red:       #f85149;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1.5rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+    }
+
+    header {
+      margin-bottom: 3rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .logo-lock {
+      font-size: 1.4rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+
+    h1 span {
+      color: var(--green);
+    }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid;
+    }
+
+    .badge-green  { color: var(--green);  border-color: var(--green-dim);  background: var(--green-dim); }
+    .badge-amber  { color: var(--amber);  border-color: var(--amber-dim);  background: var(--amber-dim); }
+    .badge-muted  { color: var(--muted);  border-color: var(--border);     background: var(--bg2); }
+
+    section {
+      margin-bottom: 2.5rem;
+    }
+
+    h2 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .feature-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+    }
+
+    .feature-card .label {
+      font-size: 0.8rem;
+      color: var(--green);
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+
+    .feature-card .desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    pre {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.25rem;
+      overflow-x: auto;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    .comment { color: var(--muted); }
+    .cmd     { color: var(--green); }
+    .flag    { color: var(--amber); }
+    .str     { color: #a5d6ff; }
+
+    .arch-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.25rem;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: var(--muted);
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .arch-box .highlight { color: var(--green); }
+    .arch-box .dim       { color: var(--border); }
+
+    .perf-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .perf-table th {
+      text-align: left;
+      color: var(--muted);
+      font-weight: 400;
+      padding: 0.4rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .perf-table td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .perf-table td:last-child { color: var(--green); }
+
+    .links {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .link {
+      font-size: 0.83rem;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      background: var(--bg2);
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .link:hover {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    footer {
+      margin-top: auto;
+      padding-top: 3rem;
+      font-size: 0.75rem;
+      color: var(--border);
+      text-align: center;
+    }
+
+    footer a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    footer a:hover { color: var(--green); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">
+      <span class="logo-lock">[]</span>
+      <h1>jawn <span>vault</span></h1>
+    </div>
+    <p class="tagline">secure credential proxy for the houseofjawn network</p>
+    <div class="badge-row">
+      <span class="badge badge-green">rust</span>
+      <span class="badge badge-amber">phase 2 / security hardening</span>
+      <span class="badge badge-muted">MIT</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>what it does</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="label">fast cache</div>
+        <div class="desc">sub-5ms retrieval vs ~128ms raw GPG decryption. in-memory, TTL-based, secrets zeroed on eviction.</div>
+      </div>
+      <div class="feature-card">
+        <div class="label">unix socket API</div>
+        <div class="desc">no network exposure. kernel-enforced access control via SO_PEERCRED.</div>
+      </div>
+      <div class="feature-card">
+        <div class="label">audit log</div>
+        <div class="desc">full trail of who accessed what credential, when. SQLite with configurable retention.</div>
+      </div>
+      <div class="feature-card">
+        <div class="label">memory safety</div>
+        <div class="desc">secrets zeroed on drop. uses the secrecy and zeroize crates. no accidental log exposure.</div>
+      </div>
+      <div class="feature-card">
+        <div class="label">token auth</div>
+        <div class="desc">bearer tokens with path-based permissions. stored as SHA-256 hashes, never plaintext.</div>
+      </div>
+      <div class="feature-card">
+        <div class="label">pass backend</div>
+        <div class="desc">wraps the existing pass (GPG) store. no migration needed — same secrets, faster access.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>quick start</h2>
+<pre><span class="comment"># build</span>
+<span class="cmd">cargo build</span> <span class="flag">--release</span>
+
+<span class="comment"># start the daemon</span>
+<span class="cmd">./target/release/jawn-vault</span>
+
+<span class="comment"># create a client token (path pattern, read-only)</span>
+<span class="cmd">./target/release/vault-cli token create</span> houseofjawn-bot \
+  <span class="flag">--grant</span> <span class="str">'claude/**'</span> <span class="flag">--permission</span> read
+
+<span class="comment"># use it</span>
+<span class="cmd">export</span> VAULT_TOKEN=<span class="str">'vault_abc123...'</span>
+<span class="cmd">./target/release/vault-cli get</span> claude/api/anthropic</pre>
+  </section>
+
+  <section>
+    <h2>architecture</h2>
+    <div class="arch-box"><span class="highlight">jawn-vault daemon</span>
+<span class="dim">┌────────────────────────────────────────────────────────────┐</span>
+<span class="dim">│</span>  unix socket  <span class="dim">/run/user/1000/jawn-vault.sock               │</span>
+<span class="dim">│        │                                                    │</span>
+<span class="dim">│  ┌─────┴──────┐  ┌──────────────┐  ┌──────────────────┐   │</span>
+<span class="dim">│  │</span> <span class="highlight">cache</span>      <span class="dim">│  │</span> <span class="highlight">pass backend</span> <span class="dim">│  │</span> <span class="highlight">audit log</span>       <span class="dim">│   │</span>
+<span class="dim">│  │</span> in-memory  <span class="dim">│  │</span> gpg decrypt  <span class="dim">│  │</span> SQLite          <span class="dim">│   │</span>
+<span class="dim">│  │</span> SecretBox  <span class="dim">│  │</span> subprocess   <span class="dim">│  │</span> SO_PEERCRED     <span class="dim">│   │</span>
+<span class="dim">│  └────────────┘  └──────────────┘  └──────────────────┘   │</span>
+<span class="dim">└────────────────────────────────────────────────────────────┘</span></div>
+  </section>
+
+  <section>
+    <h2>performance targets</h2>
+    <table class="perf-table">
+      <tr>
+        <th>operation</th>
+        <th>target</th>
+      </tr>
+      <tr><td>cache hit</td><td>&lt;5ms</td></tr>
+      <tr><td>cache miss (pass/GPG)</td><td>&lt;150ms</td></tr>
+      <tr><td>token authentication</td><td>&lt;1ms</td></tr>
+      <tr><td>audit log write</td><td>&lt;5ms</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>links</h2>
+    <div class="links">
+      <a class="link" href="https://github.com/jamditis/jawn-vault">github</a>
+      <a class="link" href="https://github.com/jamditis/jawn-vault/blob/main/README.md">readme</a>
+      <a class="link" href="https://github.com/jamditis/jawn-vault/blob/main/ROADMAP.md">roadmap</a>
+      <a class="link" href="https://github.com/jamditis/jawn-vault/blob/main/deploy/config.example.toml">example config</a>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  built by <a href="mailto:jamditis@gmail.com">joe amditis</a> &nbsp;&mdash;&nbsp;
+  <a href="https://github.com/jamditis/jawn-vault">github.com/jamditis/jawn-vault</a>
+</footer>
+
+<script>
+  console.log('%c JAWN VAULT ', 'background: #0d1117; color: #3fb950; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 4px; border: 1px solid #3fb950;')
+  console.log('%c rust-powered credential proxy. secrets zeroed on drop.', 'color: #d29922; font-style: italic; font-size: 13px;')
+  console.log('%c stack: Rust, Tokio, SQLite, ring, secrecy, zeroize', 'color: #8b949e; font-size: 11px;')
+  console.log('%c built by joe amditis  —  jamditis@gmail.com', 'color: #8b949e; font-size: 11px;')
+</script>
+</body>
+</html>
